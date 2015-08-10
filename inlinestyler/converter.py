@@ -60,7 +60,8 @@ class Conversion(object):
                 element.set('style', v)
 
         if copy_style:
-            style = etree.fromstring("<style>" + aggregate_css + "</style>")
+            sheet = cssutils.parseString(aggregate_css)
+            style = etree.HTML("<style>" + sheet.cssText + "</style>")
             document.find('.//body').insert(0, style)
 
         self.convertedHTML = etree.tostring(document, method="xml", pretty_print=True, encoding=encoding)
