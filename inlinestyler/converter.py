@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import sys
 
@@ -155,6 +156,9 @@ class Conversion(object):
                                 sameprio = (p.priority == view[element].getPropertyPriority(p.name))
                                 if not sameprio and bool(p.priority) or (sameprio and selector.specificity >= specificities[element][p.name]):
                                     # later, more specific or higher prio
+                                    if selector.specificity > specificities[element][p.name]:
+                                        # update specification if we later met with higher priority
+                                        specificities[element][p.name] = selector.specificity
                                     view[element].setProperty(p.name, p.value, p.priority)
 
                 except ExpressionError:
