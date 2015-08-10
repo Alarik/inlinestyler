@@ -22,7 +22,7 @@ class Conversion(object):
         self.supportPercentage = 100
         self.convertedHTML = ""
 
-    def perform(self, document, sourceHTML, sourceURL, encoding=None):
+    def perform(self, document, sourceHTML, sourceURL, encoding=None, copy_style=False):
         aggregate_css = ""
 
         # Retrieve CSS rel links from html pasted and aggregate into one string
@@ -59,6 +59,10 @@ class Conversion(object):
             if element.tag not in ignore_list:
                 v = style.getCssText(separator=u'')
                 element.set('style', v)
+
+        if copy_style:
+            style = etree.fromstring("<style>" + aggregate_css + "</style>")
+            document.find('.//body').insert(0, style)
 
         self.convertedHTML = etree.tostring(document, method="xml", pretty_print=True, encoding=encoding)
         self.convertedHTML = self.convertedHTML.decode(encoding).replace('&#13;', '')  # Tedious raw conversion of line breaks.
