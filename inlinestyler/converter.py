@@ -20,6 +20,7 @@ class Conversion(object):
         self.CSSUnsupportErrors = dict()
         self.supportPercentage = 100
         self.convertedHTML = ""
+        self.used_rules = []
 
     def perform(self, document, sourceHTML, sourceURL, encoding=None, copy_style=False):
         aggregate_css = ""
@@ -46,7 +47,8 @@ class Conversion(object):
         CSSStyleSelector = CSSSelector("style,Style")
         matching = CSSStyleSelector.evaluate(document)
         for element in matching:
-            aggregate_css += element.text
+            if element.text:
+                aggregate_css += element.text
             element.getparent().remove(element)
 
         # Convert document to a style dictionary compatible with etree
@@ -60,9 +62,12 @@ class Conversion(object):
                 element.set('style', v)
 
         if copy_style:
-            sheet = cssutils.parseString(aggregate_css)
+            sheet = cssutils.css.CSSStyleSheet()
+            for rule in self.used_rules:
+                sheet.add(rule)
+
             style = etree.HTML("<style>" + sheet.cssText + "</style>")
-            document.find('.//body').insert(0, style)
+            document.find('.//body').insert(0, style.find(".//style"))
 
         self.convertedHTML = etree.tostring(document, method="xml", pretty_print=True, encoding=encoding)
         self.convertedHTML = self.convertedHTML.decode(encoding).replace('&#13;', '')  # Tedious raw conversion of line breaks.
@@ -106,7 +111,8 @@ class Conversion(object):
                 try:
                     cssselector = CSSSelector(selector.selectorText)
                     matching = cssselector.evaluate(document)
-
+                    if matching and not rule in self.used_rules:
+                        self.used_rules.append(rule)
                     for element in matching:
                         # add styles for all matching DOM elements
                         if element not in view:
