@@ -66,7 +66,7 @@ class Conversion(object):
             for rule in self.used_rules:
                 sheet.add(rule)
 
-            style = etree.HTML("<style>" + sheet.cssText + "</style>")
+            style = etree.HTML("<style>" + sheet.cssText.decode('utf-8') + "</style>")
             document.find('.//body').insert(0, style.find(".//style"))
 
         self.convertedHTML = etree.tostring(document, method="xml", pretty_print=True, encoding=encoding)
